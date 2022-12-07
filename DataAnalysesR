@@ -1,0 +1,146 @@
+###PSY 4960 Research Project Step F
+
+Mitchell Lee & Connor Prok
+
+
+Research Questions:
+
+  1. How does parents' education status correlate with students' final grades?
+
+Hypothesis: There is a positive correlation between parents' education status and students' final grades.
+  
+  2. Does number of alcoholic beverages consumed during the weekdays correlate with students grades?
+
+Hypothesis: There is a negative correlation between number of alcoholic beverages consumed during the weekdays and students' academic grades.
+      
+  3. Does the number of hours studied, specifically quartile, have a statistical difference on final grades?
+
+Hypothesis: There will be statistical differences in final grades between the students who study less the median hours studied, those who were at the median hours studied, and those who studied higher than the median hours studied. More study hours will correlate positively and cause higher test grades between the three groups. 
+
+###Data Cleaning
+Import data set.
+```{r}
+library(readr)
+student_por <- read.csv("~/Desktop/Final Project/student-por.csv")
+```
+
+
+Load in necessary packages.
+```{r}
+library(jtools)
+library(ggplot2)
+library(tidyverse)
+```
+
+
+Printed column names to better assess what variable is being used in analyses. 
+```{r}
+colnames(student_por)
+```
+
+
+Changed some levels of different variables to read demographic information more easily. 
+```{r}
+student_por$address <- as.factor(student_por$address)
+levels(student_por$address)
+levels(student_por$address) <- c("Rural", "Urban")
+
+student_por$Pstatus <- as.factor(student_por$Pstatus)
+levels(student_por$Pstatus)
+levels(student_por$Pstatus) <- c("Apart", "Together")
+
+student_por$Mjob <- as.factor(student_por$Mjob)
+student_por$Fjob <- as.factor(student_por$Fjob)
+levels(student_por$Mjob)
+levels(student_por$Fjob)
+levels(student_por$Mjob) <- c("At Home", "Health", "Other", "Services", "Teacher")
+levels(student_por$Fjob) <- c("At Home", "Health", "Other", "Services", "Teacher")
+
+
+```
+
+
+
+###Research Question 1:
+
+#Hypothesis: There is a positive correlation between parents' education status and students final grades.
+```{r}
+cor.test(student_por$Medu, student_por$G3, alternative="greater")
+
+cor.test(student_por$Fedu, student_por$G3, alternative="greater")
+
+#Mother correlation = .24
+  #r(647)=6.2927, p<0.001
+#Father correlation = .21
+  #r(647)=5.5124, p<0.001
+    #Both are weak positive correlations and are both statistically significant in relationship to the null hypothesis proposing true correlation would be r=0. We have statistically significant evidence to reject the null hypothesis of H0: r=0, and 95% confidently say there is a positive, but weak true correlation that lays within [0.178, 1.00] for mother's education, and [0.149, 1.00] for father's education. 
+```
+    
+    
+Graphing both these correlations.
+```{r}
+ggplot(student_por, aes(Medu, G3)) +geom_point() + geom_smooth(method="lm") + xlab("Mother's Education Level (0-4)") + ylab("Final Grade (Out of 20)") +ggtitle("Mother's Education vs Student's Final Grades") + theme_apa()
+
+ggplot(student_por, aes(Fedu, G3)) +geom_point() + geom_smooth(method="lm") + xlab("Father's Education Level (0-4)") + ylab("Final Grade (Out of 20)") +ggtitle("Father's Education vs Student's Final Grades") + theme_apa()
+```
+
+###Research Question 2:
+
+#Hypothesis: There is a negative correlation between number of alcoholic beverages consumed during the weekdays and students grades.
+```{r}
+cor.test(student_por$Dalc, student_por$G3, alternative="less")
+
+#Correlation = -0.20
+  #r(647)=-5.32, p<0.001
+  #Weak and negative correlation. Can reject null hypothesis and say there is statistical evidence that true correlation of not equal to 0. 95% confident that true correlation value lands within the range of [-1.0, -0.14].
+```
+
+
+Graphing this correlation.
+```{r}
+ggplot(student_por, aes(Dalc, G3)) +geom_point() +geom_smooth(method="lm") +xlab("Weekday Alcohol Consumption ('Very Low(1)' to 'Very High(4)')") +ylab("Students' Final Grades (Out of 20)") + ggtitle("Student Weekday Alcohol Consumption vs. Students' Final Grades") + theme_apa()
+```
+
+###Research Question 3
+#Hypothesis: There will be statistical differences in final grades between the students who study less the median hours studied, those who were at the median hours studied, and those who studied higher than the median hours studied. More study hours will correlate positively with higher test grades between the three groups. 
+
+```{r}
+#First, had to subset the student_por dataset into three different groups based on how they responded in relation to the median (median=2): those who reported studying below the median, those who reported at the median, and those who reported studying above the median. Then, ran independent sample t.tests to determine if groups have significant differences in true mean differences in scores. 
+
+median(student_por$studytime)
+
+StudyBelowMedian <- student_por %>% filter(studytime<2)
+StudyAtMedian <- student_por %>% filter(studytime==2)
+StudyAboveMedian <- student_por %>% filter(studytime>2)
+
+
+cor.test(student_por$studytime, student_por$G3)
+
+  #Correlational test shows that there is a statistically significant correlation (differing from 0) within our data, t(647)=6.5617, p<0.001. We have a positive but weak correlation between student study time and student final grade. 
+
+t.test(StudyAtMedian$G3, StudyBelowMedian$G3, var.equal=FALSE, alternative="greater")
+
+  #There is statistically significant evidence that those who studied below the median and those who studied the median score had a true difference in means that is greater than 0, t(456.2)=4.3209, p<0.001. We would reject the null hypothosis that there is no statistically significant mean difference between at median group and below median group. 
+
+t.test(StudyAboveMedian$G3, StudyAtMedian$G3, var.equal=FALSE, alternative="greater")
+
+  #There is statistically significant evidence that those who studied at the median and those who studied above the median score had a true differences in means that is greater than 0, t(301.99)=3.6863, p<0.001. We would reject the null hypothesis that there is no statistically significant mean difference between above median and at median group. 
+
+t.test(StudyAboveMedian$G3,  StudyBelowMedian$G3, var.equal=FALSE, altnerative="greater")
+
+  #There is statistically significant evidence that those who studied above the median and those who studied below the median had a true difference in means that is greater than 0, t(316.83)=7.3255, p<0.001. We would reject the null hypothesis that there is no statistically significant mean difference between above median and below median group. 
+
+```
+
+Visualizing the statistics and relationships
+```{r}
+#Two visuals below. First visual is a look at the correlational relationship between study time (studytime) and final grade (G3). Red line shows the median response of studytime at x=2. Regression line shows weak but positive correlation through each level of reported study time. Second graph considers the progression of student grades throughout the course separated by their responses. It is important to note that 3 and 4 are separate graphs, but are combined to form the "Above Median" subset used in the analyses above. 
+
+ggplot(student_por, aes(studytime, G3)) + geom_point() + geom_smooth(method="lm") + geom_vline(xintercept=median(student_por$studytime), color="Red") + xlab("Study Time (<2 hours(1) to >10 hours(4))") + ylab("Final Grade") + ggtitle("Amount of Studying Versus Final Grade Scored") + theme_apa()
+
+student_por_longer <- pivot_longer(student_por, cols=c("G1", "G2", "G3"), names_to="GradePoint", values_to="Grade")
+
+GradeTimeline <- ggplot(student_por_longer, aes(GradePoint, Grade, group=studytime)) + geom_point() + geom_smooth(method="lm") + xlab("Grade Checkpoints") + ylab("Grade Attained") + ggtitle("Progression of Grades Over Course Separated \n by Responses of Study Time") + theme_apa()
+
+GradeTimeline + facet_wrap(student_por_longer$studytime) + geom_smooth(method="lm")
+```
