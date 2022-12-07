@@ -4,8 +4,8 @@ Title: Student Alcohol Consumption, Educational Status, and Study Time on Academ
 
 Description: This GitHub repository contains all the information, data, and analyses from our study. 
 
-DataAnalysesProject:
+DataAnalysesProject.html: This is the knitted html file from our analyses of our research questions. 
 
-DataAnalysesR
+DataAnalysesR: This is a branch that includes all of the R code we used for our analyses and research. 
 
-student-por.csv:
+student-por.csv: This is the dataset we used which was obtained from Kaggle.com
